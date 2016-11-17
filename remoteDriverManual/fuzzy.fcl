@@ -1,0 +1,103 @@
+FUNCTION_BLOCK logic	// Block definition (there may be more than one block per file)
+
+// Define input variables
+VAR_INPUT				
+	xPos : REAL;
+	angle : REAL;
+END_VAR
+
+// Define output variable
+VAR_OUTPUT				
+	steer : REAL;
+END_VAR
+
+// Fuzzify input variable 'xpos': {'left', 'leftCenter', 'center', 'rightCenter', 'excellent'}
+FUZZIFY xPos			
+	TERM left := (0, 1) (0.1, 1) (0.35, 0) ; 
+	TERM leftCenter := (0.30, 0) (0.40, 1) (0.50, 0);
+	
+	TERM center := (0.45, 0) (0.50,1) (0.55,0);
+	
+	TERM rightCenter := (0.50, 0) (0.60, 1) (0.70, 0);
+	TERM right := (0.65, 0) (0.90,1) (1, 1);
+END_FUZZIFY
+
+// Fuzzify input variable 'angle': { 'rightDown', 'rightUp', 'rightVertical', 'Vertical', 'leftVertical', 'leftUp', 'leftDown' }
+FUZZIFY angle			
+	TERM rightDown := (0, 0.17) (9, 0) (270, 0) (315, 1) (359, 0.19)(360, 0);
+	TERM rightUp := (0, 0.28) (23, 1) (54, 0) (351, 0) (359, 0.31) ;
+	TERM rightVertical := (36, 0) (63, 1) (90, 0);
+	
+	TERM vertical := (72, 0) (90, 1) (108, 0);
+	
+	TERM leftVertical := (90, 0) (117, 1) (144, 0);
+	TERM leftUp := (126, 0) (157, 1) (189, 0);
+	TERM leftDown := (171, 0) (225, 1) (270, 0);
+END_FUZZIFY
+
+// Defzzzify output variable 'steer' : {'right', 'zero', 'left' }
+DEFUZZIFY steer			
+	TERM rightStrong := (0.5, 0) (1, 1);
+	TERM rightMedium := (0.2, 0)  (0.5, 1) (0.8, 0);
+	TERM rightLight := (0, 0) (0.2, 1) (0.4, 0);
+	
+	TERM zero := (-0.15, 0) (0, 1) (0.15, 0);
+	
+	TERM leftLight := (-0.4, 0) (-0.2, 1) (0, 0);
+	TERM leftMedium := (-0.83, 0) (-0.5, 1) (-0.17, 0);
+	TERM leftStrong := (-1, 1) (-0.5, 0);
+	 
+	METHOD : COG;		// Use 'Center Of Gravity' defuzzification method
+	DEFAULT := 0;		// Default value is 0 (if no rule activates defuzzifier)
+END_DEFUZZIFY
+
+// Inference rules
+RULEBLOCK No1
+	AND : MIN;	// Use 'min' for 'and'
+	ACT : MIN;	// Use 'min' activation methodright
+	ACCU : MAX;	// Use 'max' accumulation method
+
+	RULE 1 : IF xPos IS left AND angle IS rightDown THEN steer IS leftStrong;
+	RULE 2 : IF xPos IS leftCenter AND angle IS rightDown THEN steer IS leftStrong; 
+	RULE 3 : IF xPos IS center AND angle IS rightDown THEN steer IS leftMedium;
+	RULE 4 : IF xPos IS rightCenter AND angle IS rightDown THEN steer IS rightStrong;
+	RULE 5 : IF xPos IS right AND angle IS rightDown THEN steer IS rightMedium; 
+	
+	RULE 6 : IF xPos IS left AND angle IS rightUp THEN steer IS leftStrong;
+	RULE 7 : IF xPos IS leftCenter AND angle IS rightUp THEN steer IS leftStrong; 
+	RULE 8 : IF xPos IS center AND angle IS rightUp THEN steer IS leftMedium;
+	RULE 9 : IF xPos IS rightCenter AND angle IS rightUp THEN steer IS leftLight;
+	RULE 10 : IF xPos IS right AND angle IS rightUp THEN steer IS leftLight; 
+//	
+	RULE 11 : IF xPos IS left AND angle IS rightVertical THEN steer IS leftStrong;
+	RULE 12 : IF xPos IS leftCenter AND angle IS rightVertical THEN steer IS rightLight; 
+	RULE 13 : IF xPos IS center AND angle IS rightVertical THEN steer IS rightMedium;
+	RULE 14 : IF xPos IS rightCenter AND angle IS rightVertical THEN steer IS rightLight;
+	RULE 15 : IF xPos IS right AND angle IS rightVertical THEN steer IS leftMedium; 
+//	
+	RULE 16 : IF xPos IS left AND angle IS vertical THEN steer IS leftStrong;
+	RULE 17 : IF xPos IS leftCenter AND angle IS vertical THEN steer IS rightLight; 
+	RULE 18 : IF xPos IS center AND angle IS vertical THEN steer IS zero;
+	RULE 19 : IF xPos IS rightCenter AND angle IS vertical THEN steer IS leftLight;
+	RULE 20 : IF xPos IS right AND angle IS vertical THEN steer IS leftStrong; 
+//
+	RULE 21 : IF xPos IS left AND angle IS leftVertical THEN steer IS leftLight;
+	RULE 22 : IF xPos IS leftCenter AND angle IS leftVertical THEN steer IS leftLight; 
+	RULE 23 : IF xPos IS center AND angle IS leftVertical THEN steer IS leftLight;
+	RULE 24 : IF xPos IS rightCenter AND angle IS leftVertical THEN steer IS leftStrong;
+	RULE 25 : IF xPos IS right AND angle IS leftVertical THEN steer IS leftStrong; 
+
+	RULE 26 : IF xPos IS left AND angle IS leftUp THEN steer IS leftLight;
+	RULE 27 : IF xPos IS leftCenter AND angle IS leftUp THEN steer IS leftMedium; 
+	RULE 28 : IF xPos IS center AND angle IS leftUp THEN steer IS leftMedium;
+	RULE 29 : IF xPos IS rightCenter AND angle IS leftUp THEN steer IS rightStrong;
+	RULE 30 : IF xPos IS right AND angle IS leftUp THEN steer IS rightStrong; 
+
+	RULE 31 : IF xPos IS left AND angle IS leftDown THEN steer IS leftMedium;
+	RULE 32 : IF xPos IS leftCenter AND angle IS leftDown THEN steer IS leftStrong; 
+	RULE 33 : IF xPos IS center AND angle IS leftDown THEN steer IS leftStrong;
+	RULE 34 : IF xPos IS rightCenter AND angle IS leftDown THEN steer IS rightStrong;
+	RULE 35 : IF xPos IS right AND angle IS leftDown THEN steer IS rightStrong; 
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

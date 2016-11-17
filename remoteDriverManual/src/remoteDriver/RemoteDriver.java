@@ -7,7 +7,11 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.StringTokenizer;
- 
+
+import net.sourceforge.jFuzzyLogic.FIS;
+import net.sourceforge.jFuzzyLogic.rule.Variable;
+
+
 public class RemoteDriver {
 	
 	static int port = 4321;
@@ -34,12 +38,18 @@ public class RemoteDriver {
         BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
         String fromServer;
  
+        String fileName = "fuzzy.fcl";
+        FIS fis = FIS.load(fileName, true);
+        
+        //System.out.println(fis);
+        
         double x, y;
         double angle;
         
         // requisicao da posicao do caminhao
         out.println("r");
         while ((fromServer = in.readLine()) != null) {
+        	System.out.println("Enter");
         	StringTokenizer st = new StringTokenizer(fromServer);
         	x = Double.valueOf(st.nextToken()).doubleValue();
         	y = Double.valueOf(st.nextToken()).doubleValue();
@@ -48,18 +58,20 @@ public class RemoteDriver {
         	System.out.println("x: " + x + " y: " + y + " angle: " + angle);
         	
         	/////////////////////////////////////////////////////////////////////////////////////
-        	// TODO sua lÃ³gica fuzzy vai aqui use os valores de x,y e angle obtidos. x e y estao em [0,1] e angulo [0,360)
+        	// TODO sua lógica fuzzy vai aqui use os valores de x,y e angle obtidos. x e y estao em [0,1] e angulo [0,360)
         	
+        	fis.setVariable("xPos", x);
+        	fis.setVariable("angle", angle);
         	
+        	fis.evaluate();
+        	
+        	Variable steer = fis.getVariable("steer");
         	
 			
-        	double teste = Double.valueOf(stdIn.readLine());
+        	//double teste = Double.valueOf(stdIn.readLine());
         	
         	
-        	
-        	
-        	
-        	double respostaDaSuaLogica = teste; // atribuir um valor entre -1 e 1 para virar o volante pra esquerda ou direita.
+        	double respostaDaSuaLogica = steer.defuzzify(); // atribuir um valor entre -1 e 1 para virar o volante pra esquerda ou direita.
         	
         	
         	///////////////////////////////////////////////////////////////////////////////// Acaba sua modificacao aqui
@@ -69,6 +81,8 @@ public class RemoteDriver {
             // requisicao da posicao do caminhao        	
         	out.println("r");	
         }
+        
+        System.out.println("Leave");
  
         out.close();
         in.close();
