@@ -60,19 +60,15 @@ public class RemoteDriver {
         	/////////////////////////////////////////////////////////////////////////////////////
         	// TODO sua lógica fuzzy vai aqui use os valores de x,y e angle obtidos. x e y estao em [0,1] e angulo [0,360)
         	
-        	fis.setVariable("xPos", x);
-        	fis.setVariable("angle", angle);
+        	fis.setVariable("x", x);
+        	fis.setVariable("y", y);
+        	fis.setVariable("angulo", angle);
         	
         	fis.evaluate();
         	
-        	Variable steer = fis.getVariable("steer");
-        	
-			
-        	//double teste = Double.valueOf(stdIn.readLine());
-        	
+        	Variable steer = fis.getVariable("virarVolante");
         	
         	double respostaDaSuaLogica = steer.defuzzify(); // atribuir um valor entre -1 e 1 para virar o volante pra esquerda ou direita.
-        	
         	
         	///////////////////////////////////////////////////////////////////////////////// Acaba sua modificacao aqui
         	// envio da acao do volante
